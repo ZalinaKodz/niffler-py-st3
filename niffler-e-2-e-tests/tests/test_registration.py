@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
-from pages.signup_page import RegistrationPage
+
 from playwright.sync_api import expect
 from utils.create_user import UserDataFactory
+from pages.signup_page import RegistrationPage
 
 load_dotenv()
 
