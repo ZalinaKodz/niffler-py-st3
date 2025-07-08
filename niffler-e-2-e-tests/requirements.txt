@@ -1,0 +1,11 @@
+pytest
+requests
+python-dotenv
+selene==2.0.0b11
+selenium==4.4.3
+webdriver-manager==3.8.3
+typing-extensions==4.3.0
+jsonschema
+pydantic
+playwright
+faker

@@ -4,7 +4,7 @@ services:
     image: adven27/grpc-wiremock:latest
     volumes:
       - ./wiremock/grpc:/wiremock                     #stubs
-      - ./niffler-grpc-common/src/main/proto:/proto   #proto
+      - ./niffler-grpc-common/niffler/main/proto:/proto   #proto
     ports:
       - 8888:8888                                     # wiremock port
       - 8092:8092                                     # gRPC port
