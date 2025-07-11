@@ -18,7 +18,3 @@ class ProfilePage:
     def update_profile_name(self, new_name: str):
         self.name_field.fill(new_name)
         self.save_button.click()
-
-    def add_category(self, category_name: str):
-        self.category_field.fill(category_name)
-        self.category_field.press("Enter")

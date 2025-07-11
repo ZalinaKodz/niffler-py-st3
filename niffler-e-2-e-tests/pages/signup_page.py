@@ -1,15 +1,11 @@
 from playwright.sync_api import Page
-import os
-from dotenv import load_dotenv
+from pages.base_page import BasePage
 
-load_dotenv()
 
-class RegistrationPage:
+class RegistrationPage(BasePage):
     def __init__(self, page: Page):
-        self.page = page
-        self.auth_url = os.getenv("AUTH_URL")
-        self.username_input = page.get_by_role("textbox", name="Username")
-        self.password_input = page.get_by_role("textbox", name="Password", exact=True)
+        super().__init__(page)
+        # Уникальные локаторы для регистрации
         self.confirm_password_input = page.get_by_role("textbox", name="Submit password")
         self.sign_up_button = page.get_by_role("button", name="Sign Up")
         self.success_message = page.get_by_text("Congratulations! You've registered!", exact=False)
