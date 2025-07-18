@@ -1,14 +1,11 @@
 from playwright.sync_api import Page
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 class BasePage:
-    def __init__(self, page: Page):
+    def __init__(self, page: Page, auth_url: str, frontend_url: str):
         self.page = page
-        self.auth_url = os.getenv("AUTH_URL").rstrip('/')
+        self.auth_url = auth_url
+        self.frontend_url = frontend_url
 
         # Общие локаторы для авторизации
         self.username_input = page.get_by_role("textbox", name="Username")

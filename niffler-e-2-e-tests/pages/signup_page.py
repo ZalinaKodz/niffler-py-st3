@@ -3,8 +3,8 @@ from pages.base_page import BasePage
 
 
 class RegistrationPage(BasePage):
-    def __init__(self, page: Page):
-        super().__init__(page)
+    def __init__(self, page: Page, auth_url: str, frontend_url: str):
+        super().__init__(page, auth_url, frontend_url)
         # Уникальные локаторы для регистрации
         self.confirm_password_input = page.get_by_role("textbox", name="Submit password")
         self.sign_up_button = page.get_by_role("button", name="Sign Up")

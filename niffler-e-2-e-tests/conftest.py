@@ -1,74 +1,78 @@
 import os
 import re
-
 import pytest
+import logging
+from typing import Generator
+from pydantic_settings import BaseSettings
+from pydantic import Field
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page, expect
 from faker import Faker
-from typing import Generator
-import logging
-from pydantic_settings import BaseSettings
-from pydantic import Field, ValidationError
-from pages.profile_page import ProfilePage
+from dotenv import load_dotenv
+
 from pages.login_page import AuthPage
+from pages.profile_page import ProfilePage
 from pages.signup_page import RegistrationPage
 from pages.spending_page import SpendingPage
 
-# Constants
-DEFAULT_HEADLESS = os.getenv("HEADLESS", "false").lower() == "true"
-DEFAULT_SLOW_MO = int(os.getenv("SLOW_MO", "0"))
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+# --------------------------
+# 1. Конфигурация и настройки
+# --------------------------
 
 class Settings(BaseSettings):
-    """Validate environment variables"""
     AUTH_URL: str = Field(default="http://auth.niffler.dc:9000")
     FRONTEND_URL: str = Field(default="http://frontend.niffler.dc")
     GATEWAY_URL: str = Field(default="http://gateway.niffler.dc:8090")
-    TEST_USERNAME: str
-    TEST_PASSWORD: str
+    TEST_USERNAME: str = Field(default="test_user")
+    TEST_PASSWORD: str = Field(default="test_password")
 
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
-try:
-    settings = Settings()
-except ValidationError as e:
-    logger.error(f"Environment validation error: {e}")
-    raise
-
-fake = Faker()
+@pytest.fixture(scope="session")
+def settings():
+    load_dotenv()
+    return Settings()
 
 
-# Hooks
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    rep = outcome.get_result()
-    setattr(item, f"rep_{rep.when}", rep)
+# --------------------------
+# 2. Фикстуры URL (производные от настроек)
+# --------------------------
+
+@pytest.fixture(scope="session")
+def auth_url(settings):
+    return settings.AUTH_URL.rstrip('/')
 
 
-# Core fixtures
+@pytest.fixture(scope="session")
+def frontend_url(settings):
+    return settings.FRONTEND_URL.rstrip('/')
+
+
+@pytest.fixture(scope="session")
+def gateway_url(settings):
+    return settings.GATEWAY_URL.rstrip('/')
+
+
+# --------------------------
+# 3. Инициализация браузера и контекста
+# --------------------------
+
 @pytest.fixture(scope="session")
 def browser() -> Generator[Browser, None, None]:
-    """Launch browser instance (session-scoped)"""
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            headless=DEFAULT_HEADLESS,
-            slow_mo=DEFAULT_SLOW_MO
+            headless=os.getenv("HEADLESS", "false").lower() == "true",
+            slow_mo=int(os.getenv("SLOW_MO", "0"))
         )
-        logger.info(f"Browser launched (headless={DEFAULT_HEADLESS})")
         yield browser
         browser.close()
-        logger.info("Browser closed")
 
 
 @pytest.fixture
 def context(browser: Browser, request: pytest.FixtureRequest) -> Generator[BrowserContext, None, None]:
-    """Browser context with automatic artifact collection on failure"""
     context = browser.new_context(
         viewport={"width": 1280, "height": 800},
         ignore_https_errors=True,
@@ -76,50 +80,31 @@ def context(browser: Browser, request: pytest.FixtureRequest) -> Generator[Brows
     )
     yield context
 
+    # Обработка артефактов при падении теста
     if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
         try:
             os.makedirs("artifacts", exist_ok=True)
             test_name = request.node.name.replace("/", "_")
             page = context.pages[0]
             page.screenshot(path=f"artifacts/{test_name}.png", full_page=True)
-
             if page.video:
-                video_path = f"artifacts/{test_name}.webm"
-                page.video.save_as(video_path)
-                logger.info(f"Saved video: {video_path}")
+                page.video.save_as(f"artifacts/{test_name}.webm")
         except Exception as e:
-            logger.error(f"Failed to save artifacts: {e}")
+            logging.error(f"Failed to save artifacts: {e}")
     context.close()
 
 
 @pytest.fixture
 def page(context: BrowserContext) -> Generator[Page, None, None]:
-    """New browser page"""
     page = context.new_page()
     yield page
     page.close()
 
 
-# Auth fixtures
-@pytest.fixture(scope="session")
-def auth_context(browser: Browser) -> Generator[BrowserContext, None, None]:
-    """Authenticated browser context"""
-    context = browser.new_context()
-    page = context.new_page()
-    auth_page = AuthPage(page)
-    auth_page.navigate_to_login()
-    auth_page.login(settings.TEST_USERNAME, settings.TEST_PASSWORD)
-    yield context
-    context.close()
+# --------------------------
+# 4. Аутентификация и пользователи
+# --------------------------
 
-
-@pytest.fixture
-def auth_page(page: Page) -> AuthPage:
-    """AuthPage instance"""
-    return AuthPage(page).navigate_to_login()
-
-
-# User management
 class UserData(BaseSettings):
     username: str
     password: str
@@ -129,75 +114,140 @@ class UserData(BaseSettings):
 
 @pytest.fixture
 def unregistered_user() -> UserData:
-    """Generate data for a new unregistered user"""
-    username = f"{fake.unique.user_name()}_{os.getpid()}"
-    user = UserData(
-        username=username,
+    fake = Faker()
+    return UserData(
+        username=f"{fake.unique.user_name()}_{os.getpid()}",
         password=fake.password(length=12),
         firstname=fake.first_name(),
         surname=fake.last_name()
     )
-    logger.info(f"Generated unregistered user: {user.username}")
-    return user
-
-
-# Page object fixtures with auth
-@pytest.fixture
-def authenticated_page(auth_context: BrowserContext) -> Page:
-    """Authenticated page instance"""
-    return auth_context.new_page()
 
 
 @pytest.fixture
-def profile_page(authenticated_page: Page) -> ProfilePage:
-    """ProfilePage instance"""
-    profile = ProfilePage(authenticated_page)
-    authenticated_page.goto(f"{settings.FRONTEND_URL}/profile")
-    return profile
+def valid_user_credentials(settings) -> dict:
+    return {
+        "username": settings.TEST_USERNAME,
+        "password": settings.TEST_PASSWORD
+    }
+
+
+@pytest.fixture
+def invalid_credentials() -> dict:
+    return {
+        "invalid_password": "invalid_password",
+        "nonexistent_user": "non_existent_user@example.com",
+        "empty_password": ""
+    }
+
+
+# --------------------------
+# 5. Page Objects и рабочие фикстуры
+# --------------------------
+
+@pytest.fixture
+def auth_page(page: Page, auth_url, frontend_url):
+    return AuthPage(page, auth_url, frontend_url).navigate_to_login()
+
+
+@pytest.fixture(scope="session")
+def auth_context(browser: Browser, auth_url: str, frontend_url: str, settings) -> Generator[BrowserContext, None, None]:
+    context = browser.new_context()
+    page = context.new_page()
+    auth_page = AuthPage(page, auth_url, frontend_url)
+    auth_page.navigate_to_login()
+    auth_page.login(settings.TEST_USERNAME, settings.TEST_PASSWORD)
+    yield context
+    context.close()
+
+
+@pytest.fixture
+def authenticated_page(page: Page, auth_url: str, frontend_url: str, settings) -> Page:
+    auth_page = AuthPage(page, auth_url, frontend_url)
+    auth_page.navigate_to_login()
+    auth_page.login(settings.TEST_USERNAME, settings.TEST_PASSWORD)
+    expect(page).to_have_url(re.compile(r".*/main"), timeout=10000)
+    return page
+
+
+@pytest.fixture
+def logged_in_user(auth_page, valid_user_credentials):
+    auth_page.login(valid_user_credentials["username"], valid_user_credentials["password"])
+    yield auth_page
+
+
+@pytest.fixture
+def registration_page(page: Page, auth_url: str, frontend_url: str) -> RegistrationPage:
+    return RegistrationPage(page, auth_url, frontend_url).navigate()
+
+
+@pytest.fixture
+def profile_page(authenticated_page: Page, frontend_url: str) -> ProfilePage:
+    authenticated_page.goto(f"{frontend_url}/profile")
+    return ProfilePage(authenticated_page)
 
 
 @pytest.fixture
 def spending_page(authenticated_page: Page) -> SpendingPage:
-    """SpendingPage instance"""
-    spending_page = SpendingPage(authenticated_page)
-    spending_page.navigate_to_spending()
-    return spending_page
+    """Фикстура для страницы трат"""
+    page = SpendingPage(authenticated_page)
+    page.navigate_to_spending()
+    return page
 
 
-# Test data generators
+# --------------------------
+# 6. Тестовые данные
+# --------------------------
+
 @pytest.fixture
 def random_category() -> str:
-    """Generate random category name"""
+    fake = Faker()
     return f"{fake.word(part_of_speech='noun')} {fake.word(part_of_speech='noun')}"
 
 
 @pytest.fixture
 def random_amount() -> int:
-    """Generate random amount"""
-    return fake.random_int(100, 9999)
-
-@pytest.fixture
-def registration_page(page: Page) -> RegistrationPage:
-    """RegistrationPage instance"""
-    return RegistrationPage(page).navigate()
+    return Faker().random_int(100, 9999)
 
 
 @pytest.fixture
-def authenticated_page(page: Page) -> Page:
-    """
-    Фикстура возвращает авторизованную страницу
-    Заменяет _login и auth_context
-    """
-    auth_page = AuthPage(page)
+def new_spending_data(random_category: str, random_amount: int) -> dict:
+    return {
+        "amount": str(random_amount),
+        "category": random_category,
+    }
 
-    # Навигация и авторизация
-    auth_page.navigate_to_login()
-    auth_page.login(
-        username=os.getenv("TEST_USERNAME", "qwerty"),
-        password=os.getenv("TEST_PASSWORD", "12345")
+
+@pytest.fixture
+def fake_name() -> str:
+    return Faker().first_name()
+
+
+# --------------------------
+# 7. Хелперы и утилиты
+# --------------------------
+
+def assert_auth_error(auth_page, expected_error):
+    error_text = auth_page.get_error_message()
+    assert error_text == expected_error, (
+        f"Ожидалась ошибка '{expected_error}'. Получено: '{error_text}'"
     )
+    expect(auth_page.page).to_have_url(f"{auth_page.auth_url}/login?error")
 
-    # Проверка успешной авторизации
-    expect(page).to_have_url(re.compile(r".*/main"), timeout=10000)
 
-    return page
+@pytest.fixture
+def prepared_validation_test(auth_page, valid_user_credentials):
+    auth_page.navigate_to_login()
+    auth_page.username_input.fill(valid_user_credentials["username"])
+    return auth_page
+
+
+# --------------------------
+# 8. Хуки и обработчики
+# --------------------------
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, f"rep_{rep.when}", rep)
+
