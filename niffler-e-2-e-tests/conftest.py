@@ -1,18 +1,26 @@
+
 import os
 import re
+
+
 import pytest
 import logging
 from typing import Generator
+
+
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page, expect
 from faker import Faker
 from dotenv import load_dotenv
 
+
+
 from pages.login_page import AuthPage
 from pages.profile_page import ProfilePage
 from pages.signup_page import RegistrationPage
 from pages.spending_page import SpendingPage
+
 
 
 # --------------------------
@@ -25,6 +33,7 @@ class Settings(BaseSettings):
     GATEWAY_URL: str = Field(default="http://gateway.niffler.dc:8090")
     TEST_USERNAME: str = Field(default="test_user")
     TEST_PASSWORD: str = Field(default="test_password")
+    SPEND_DB_URL: str = Field(default="postgresql+psycopg2://postgres:secret@localhost:5432/niffler-spend")
 
     class Config:
         env_file = ".env"
@@ -250,4 +259,3 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     rep = outcome.get_result()
     setattr(item, f"rep_{rep.when}", rep)
-
