@@ -7,6 +7,7 @@ jsonschema
 pydantic==2.6.4
 playwright==1.42.0
 faker==23.0.0
+allure-pytest
 
 psycopg2-binary
 sqlalchemy
