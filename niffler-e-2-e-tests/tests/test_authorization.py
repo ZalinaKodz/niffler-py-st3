@@ -4,7 +4,7 @@ import allure
 from playwright.sync_api import expect
 from dotenv import load_dotenv
 
-from conftest import assert_auth_error
+from fixtures.auth_fixtures import assert_auth_error
 
 load_dotenv()
 

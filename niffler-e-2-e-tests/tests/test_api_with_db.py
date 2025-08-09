@@ -4,8 +4,8 @@ from datetime import datetime, date
 
 from sqlmodel import Session
 
-
-from models.spend import Category, Spend
+from models.category import Category
+from models.spend import  Spend
 
 from databases.spend_db import SpendDb
 
