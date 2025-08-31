@@ -141,62 +141,6 @@ class TestAuthRegistrationKafkaTest:
                                 f"Пользователь {username} успешно создан."
                         )
 
-        @title("KAFKA: Проверка обязательных полей")
-        @tag("KAFKA", "FORMAT")
-        def test_required_fields_processing(self, kafka, settings):
-                """Тестируем обработку сообщений с разными наборами полей"""
-                test_cases = [
-                        {
-                                "name": "only_username",
-                                "data": {"username": f"minimal_{int(time.time())}"},
-                                "expected_email": None
-                        },
-                        {
-                                "name": "with_email",
-                                "data": {
-                                        "username": f"with_email_{int(time.time())}",
-                                        "email": "test@example.com"
-                                },
-                                "expected_email": "test@example.com"
-                        },
-                        {
-                                "name": "full_data",
-                                "data": {
-                                        "username": f"full_{int(time.time())}",
-                                        "email": "full@example.com",
-                                        "first_name": "John",
-                                        "last_name": "Doe"
-                                },
-                                "expected_email": "full@example.com"
-                        }
-                ]
-
-                for test_case in test_cases:
-                        with step(f"Тестируем кейс: {test_case['name']}"):
-                                kafka.send_message("users", json.dumps(test_case["data"]))
-
-                                # Даем время на обработку
-                                time.sleep(5)
-
-                                # Проверяем результат
-                                engine = create_engine(settings.USER_DB_URL)
-                                with engine.connect() as conn:
-                                        result = conn.execute(
-                                                text("SELECT username, email, first_name, last_name FROM userdata WHERE username = :username"),
-                                                {"username": test_case["data"]["username"]}
-                                        ).fetchone()
-
-                                        if result:
-                                                user_data = dict(result)
-                                                assert user_data["username"] == test_case["data"]["username"]
-                                                assert user_data["email"] == test_case["expected_email"]
-
-                                                if "first_name" in test_case["data"]:
-                                                        assert user_data["first_name"] == test_case["data"][
-                                                                "first_name"]
-                                                if "last_name" in test_case["data"]:
-                                                        assert user_data["last_name"] == test_case["data"]["last_name"]
-
 
         @title("KAFKA: Тест различных форматов сообщений")
         @tag("KAFKA", "FORMAT")

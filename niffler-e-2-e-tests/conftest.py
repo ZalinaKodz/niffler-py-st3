@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     TEST_PASSWORD: str = Field(default="test_password")
     SPEND_DB_URL: str = Field(default="postgresql+psycopg2://postgres:secret@localhost:5432/niffler-spend")
     AUTH_SECRET: str = Field(default="secret")
-    USER_DB_URL: str = Field(default="postgresql://postgres:secret@localhost:5432/niffler-userdata")
+    USER_DB_URL: str = Field(default="postgresql+psycopg2://postgres:secret@localhost:5432/niffler-userdata")
     KAFKA_ADDRESS: str = Field(default="kafka_address")
 
 

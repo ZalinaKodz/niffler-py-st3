@@ -7,6 +7,7 @@ class UserName(BaseModel):
 
 
 class User(SQLModel, table=True):
+
     id: str = Field(default=None, primary_key=True)
     username: str
     currency: str = "RUB"

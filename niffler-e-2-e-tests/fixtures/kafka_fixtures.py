@@ -40,17 +40,3 @@ def clean_test_data(users_db: UsersDb) -> Generator[list[str], None, None]:
                     users_db.execute(f"DELETE FROM userdata WHERE username = '{username}'")
             except Exception as e:
                 print(f"⚠️  Failed to clean user {username}: {e}")
-
-
-@pytest.fixture(autouse=True)
-def cleanup_test_users(settings):
-    """Фикстура для очистки тестовых пользователей после каждого теста."""
-    yield
-
-    engine = create_engine(settings.USER_DB_URL)
-    with engine.connect() as conn:
-        conn.execute(
-            text(
-                "DELETE FROM userdata WHERE username LIKE 'test_%' OR username LIKE 'minimal_%' OR username LIKE 'duplicate_%' OR username LIKE 'update_%' OR username LIKE 'batch_%' OR username LIKE 'audit_%'")
-        )
-        conn.commit()
