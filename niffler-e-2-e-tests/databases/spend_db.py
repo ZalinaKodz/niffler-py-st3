@@ -1,5 +1,6 @@
 import json
 import uuid
+from collections.abc import Sequence
 from typing import Optional, List
 
 import allure
@@ -9,6 +10,7 @@ from sqlmodel import Session, select
 
 from models.category import Category
 from models.spend import Spend
+from models.user import UserName
 
 
 class SpendDb:
@@ -112,3 +114,8 @@ class SpendDb:
             name=name,
             attachment_type=AttachmentType.JSON
         )
+
+    def get_user(self, username: str) -> Sequence[UserName]:
+        with Session(self.engine) as session:
+            statement = select(UserName).where(UserName.username == username)
+            return session.exec(statement).one()

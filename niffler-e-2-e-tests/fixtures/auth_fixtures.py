@@ -6,7 +6,8 @@ from playwright.sync_api import expect
 from pydantic import BaseModel
 
 from clients.oauth_client import OauthClient
-from conftest import Settings
+from conftest import Settings, settings
+
 
 class UserData(BaseModel):
     username: str
@@ -56,3 +57,7 @@ def prepared_validation_test(auth_page, valid_user_credentials):
     auth_page.navigate_to_login()
     auth_page.username_input.fill(valid_user_credentials["username"])
     return auth_page
+
+@pytest.fixture(scope="session")
+def auth_client(settings: Settings):
+    return OauthClient(settings)

@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 import allure
@@ -63,14 +64,14 @@ def log_sql(conn, cursor, statement, parameters, context, executemany):
     sql_queries.append(f"SQL: {statement}\nParams: {parameters}")
 
 @pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_protocol(item):
-    yield
-    if hasattr(item, "rep_call") and item.rep_call.failed:
-        # Прикрепляем SQL-логи только если они есть
-        if sql_queries:
+def pytest_runtest_protocol(item, nextitem):
+    result = yield
+    try:
+        if hasattr(item, '_sql_queries') and item._sql_queries:
             allure.attach(
-                "\n".join(sql_queries),
+                "\n".join(item._sql_queries),
                 name="SQL Queries",
                 attachment_type=allure.attachment_type.TEXT
             )
-        sql_queries.clear()
+    except Exception as e:
+        logging.warning(f"Failed to attach SQL queries: {e}")

@@ -8,6 +8,9 @@ from pydantic import Field
 from dotenv import load_dotenv
 
 
+from clients.kafka_client import KafkaClient
+
+
 pytest_plugins = [
     "fixtures.auth_fixtures",
     "fixtures.client_fixtures",
@@ -15,6 +18,7 @@ pytest_plugins = [
     "fixtures.browser_fixtures",
     "fixtures.test_data_fixtures",
     "fixtures.allure_hooks",
+    "fixtures.kafka_fixtures",
 ]
 
 
@@ -27,6 +31,8 @@ class Settings(BaseSettings):
     TEST_PASSWORD: str = Field(default="test_password")
     SPEND_DB_URL: str = Field(default="postgresql+psycopg2://postgres:secret@localhost:5432/niffler-spend")
     AUTH_SECRET: str = Field(default="secret")
+    USER_DB_URL: str = Field(default="postgresql://postgres:secret@localhost:5432/niffler-userdata")
+    KAFKA_ADDRESS: str = Field(default="kafka_address")
 
 
     class ConfigDict:
@@ -55,7 +61,11 @@ def frontend_url(settings):
 def gateway_url(settings):
     return settings.GATEWAY_URL.rstrip('/')
 
-
+@pytest.fixture(scope="session")
+def kafka(settings):
+    """Взаимодействие с Kafka"""
+    with KafkaClient(settings) as k:
+        yield k
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
