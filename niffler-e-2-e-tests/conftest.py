@@ -10,10 +10,10 @@ from dotenv import load_dotenv
 
 from clients.kafka_client import KafkaClient
 
-
 pytest_plugins = [
     "fixtures.auth_fixtures",
     "fixtures.client_fixtures",
+    "fixtures.grpc_fixtures",
     "fixtures.pages_fixtures",
     "fixtures.browser_fixtures",
     "fixtures.test_data_fixtures",
