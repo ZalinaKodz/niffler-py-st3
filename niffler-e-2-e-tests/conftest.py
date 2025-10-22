@@ -19,6 +19,7 @@ pytest_plugins = [
     "fixtures.test_data_fixtures",
     "fixtures.allure_hooks",
     "fixtures.kafka_fixtures",
+    "fixtures.soap_fixtures",
 ]
 
 

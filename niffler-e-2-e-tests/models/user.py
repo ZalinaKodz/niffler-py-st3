@@ -1,5 +1,10 @@
+from dataclasses import dataclass
+from typing import Optional
+
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
+
+from models.enums import Currency
 
 
 class UserName(BaseModel):
@@ -16,3 +21,15 @@ class User(SQLModel, table=True):
     photo: str | None = None
     photo_small: str | None = None
     full_name: str
+
+
+@dataclass
+class UserData:
+    id: str
+    username: str
+    currency: Currency
+    firstname: Optional[str] = None
+    surname: Optional[str] = None
+    full_name: Optional[str] = None
+    photo: Optional[str] = None
+    photo_small: Optional[str] = None

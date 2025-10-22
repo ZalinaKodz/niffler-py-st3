@@ -74,3 +74,15 @@ def attach_sql(conn, cursor, statement, parameters, context, executemany):
 
     name = f"{statement.split()[0]} {db_name}"
     allure.attach(sql_full, name=name, attachment_type=AttachmentType.TEXT)
+
+
+class Epic:
+    app_name = "Niffler UserData SOAP API"
+
+class Feature:
+    userdata = "User Data Management"
+    friends = "Friends Management"
+
+class Story:
+    user_management = "User Management"
+    friends_management = "Friends Management"
