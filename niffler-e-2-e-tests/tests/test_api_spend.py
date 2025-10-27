@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 
-# Тесты
+@pytest.mark.api
 @allure.feature("Spend API")
 class TestSpendAPI:
     @allure.title("Test spend creation with different scenarios")

@@ -4,7 +4,7 @@ import requests
 import allure
 from datetime import datetime
 
-
+@pytest.mark.api
 @allure.feature("Category API")
 class TestCategoryAPI:
     @allure.title("Create new category - basic validation")

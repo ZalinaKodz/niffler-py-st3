@@ -1,6 +1,7 @@
 import re
 
 import allure
+import pytest
 from playwright.sync_api import expect
 from dotenv import load_dotenv
 
@@ -11,6 +12,7 @@ load_dotenv()
 
 @allure.epic("Authentication")
 @allure.feature("Login Flow")
+@pytest.mark.ui
 class TestAuthentication:
     @allure.story("Successful Authentication")
     @allure.severity(allure.severity_level.BLOCKER)

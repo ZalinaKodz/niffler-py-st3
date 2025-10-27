@@ -1,10 +1,12 @@
 import allure
+import pytest
 from playwright.sync_api import expect
 
 
 @allure.epic("User Authentication")
 @allure.feature("Registration")
 @allure.story("Successful user registration")
+@pytest.mark.ui
 def test_user_registration(registration_page, unregistered_user):
     """
     Test successful user registration flow:

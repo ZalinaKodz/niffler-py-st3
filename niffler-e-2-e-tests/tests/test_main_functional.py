@@ -12,6 +12,7 @@ from pages.profile_page import ProfilePage
 
 @allure.epic("Finance Application")
 @allure.feature("Spending Management")
+@pytest.mark.ui
 class TestSpendingFunctionality:
     @pytest.fixture(autouse=True)
     def setup(self, spending_page: SpendingPage):

@@ -12,6 +12,7 @@ from databases.spend_db import SpendDb
 
 @allure.epic("Spend Management System")
 @allure.feature("Database Operations")
+@pytest.mark.api
 class TestSpendDb:
     @pytest.fixture
     def spend_db(self, settings):

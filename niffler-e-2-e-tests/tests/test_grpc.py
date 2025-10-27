@@ -1,3 +1,4 @@
+import allure
 import grpc
 import pytest
 from google.protobuf import empty_pb2
@@ -6,7 +7,9 @@ from fixtures.grpc_fixtures import TestNifflerCurrencyServiceBase
 from internal.pb.niffler_currency_pb2 import CalculateRequest, CurrencyValues, CurrencyResponse
 
 
-
+@allure.epic("gRPC Services")
+@allure.feature("Currency Service")
+@pytest.mark.grpc
 class TestNifflerCurrencyServiceIntegration(TestNifflerCurrencyServiceBase):
     """Integration tests with actual server behavior."""
 

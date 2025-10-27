@@ -16,6 +16,7 @@ from models.user import UserName
 
 @epic("[KAFKA][niffler-auth]: Паблишинг сообщений в кафку")
 @suite("[KAFKA][niffler-auth]: Паблишинг сообщений в кафку")
+@pytest.mark.kafka
 class TestAuthRegistrationKafkaTest:
         @title("KAFKA: Сообщение с пользователем публикуется в Kafka после успешной регистрации")
         @tag("KAFKA")
