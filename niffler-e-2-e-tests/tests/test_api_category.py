@@ -4,8 +4,10 @@ import requests
 import allure
 from datetime import datetime
 
+@allure.epic("Niffler Application")
+@allure.feature("Category Management")
+@allure.tag("api", "rest")
 @pytest.mark.api
-@allure.feature("Category API")
 class TestCategoryAPI:
     @allure.title("Create new category - basic validation")
     def test_create_category_basic(self, category_client, verify):

@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     AUTH_SECRET: str = Field(default="secret")
     USER_DB_URL: str = Field(default="postgresql+psycopg2://postgres:secret@localhost:5432/niffler-userdata")
     KAFKA_ADDRESS: str = Field(default="kafka_address")
+    GRPC_URL: str = Field(default="localhost:8092")
 
 
     class ConfigDict:

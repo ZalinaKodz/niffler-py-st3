@@ -207,7 +207,7 @@ class AllureAPIHelper:
 
 
 class AllureSOAPHelper:
-    """Хелпер для SOAP тестов (расширяет вашу существующую логику)"""
+    """Хелпер для SOAP тестов"""
 
     @staticmethod
     @allure.step("🔄 SOAP: {operation}")
@@ -288,7 +288,7 @@ class AllureGRPCHelper:
             )
 
 
-# Создаем экземпляры для удобного использования
+
 kafka_helper = AllureKafkaHelper()
 api_helper = AllureAPIHelper()
 soap_helper = AllureSOAPHelper()

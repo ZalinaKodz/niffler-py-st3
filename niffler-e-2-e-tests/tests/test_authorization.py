@@ -10,8 +10,9 @@ from fixtures.auth_fixtures import assert_auth_error
 load_dotenv()
 
 
-@allure.epic("Authentication")
-@allure.feature("Login Flow")
+@allure.epic("Niffler Application")
+@allure.feature("Authentication")
+@allure.tag("ui", "playwright")
 @pytest.mark.ui
 class TestAuthentication:
     @allure.story("Successful Authentication")

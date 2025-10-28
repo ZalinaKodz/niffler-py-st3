@@ -5,11 +5,9 @@ import pytest
 from faker import Faker
 
 from clients.soap_client import SoapClient
-from databases.userdata_db import UserdataDb
 from marks import TestData
 from models.enums import Currency, FriendshipStatus
 from models.soap import PageInfo, SoapUser
-from models.user import UserData
 from utils.allure_helpers import Feature, Story, Epic
 
 

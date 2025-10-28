@@ -2,11 +2,11 @@ import json
 import logging
 import time
 
-
+import allure
 import pytest
 from allure import step, epic, suite, title, tag
 from faker import Faker
-from sqlalchemy import create_engine, text
+
 
 from conftest import settings, kafka
 from databases.user_db import UsersDb
@@ -14,8 +14,9 @@ from fixtures.kafka_fixtures import users_db
 from models.user import UserName
 
 
-@epic("[KAFKA][niffler-auth]: Паблишинг сообщений в кафку")
-@suite("[KAFKA][niffler-auth]: Паблишинг сообщений в кафку")
+@allure.epic("Niffler Application")
+@allure.feature("Event Streaming")
+@allure.tag("kafka", "integration")
 @pytest.mark.kafka
 class TestAuthRegistrationKafkaTest:
         @title("KAFKA: Сообщение с пользователем публикуется в Kafka после успешной регистрации")
