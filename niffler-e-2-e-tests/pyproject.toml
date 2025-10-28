@@ -1,0 +1,174 @@
+[project]
+name = "niffler-py-st3"
+version = "0.1.0"
+description = "Modern test automation framework for Niffler application with UI, API, gRPC, Kafka, and Database testing"
+authors = [
+    {name = "Zalina Kodz", email = "kod3ik87@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.9,<4.0"
+license = {text = "MIT"}
+
+dependencies = [
+    # Testing Framework
+    "pytest>=7.0.0,<8.0.0",
+    "pytest-xdist>=3.0.0,<4.0.0",
+    "pytest-playwright>=0.4.0,<0.5.0",
+
+    # API Testing
+    "requests>=2.28.0,<3.0.0",
+    "httpx>=0.24.0,<0.25.0",
+
+    # gRPC
+    "grpcio>=1.48.0,<2.0.0",
+    "grpcio-tools>=1.48.0,<2.0.0",
+    "grpcio-reflection>=1.48.0,<2.0.0",
+    "pbreflect>=1.1.0,<2.0.0",
+
+    # Kafka
+    "kafka-python>=2.0.0,<3.0.0",
+    "confluent-kafka>=2.0.0,<3.0.0",
+
+    # SOAP
+    "zeep>=4.2.0,<5.0.0",
+
+    # Database
+    "sqlmodel>=0.0.8,<0.1.0",
+    "psycopg2-binary>=2.9.0,<3.0.0",
+    "sqlalchemy>=2.0.0,<3.0.0",
+
+    # Data Validation & Models
+    "pydantic>=2.0.0,<3.0.0",
+    "pydantic-settings>=2.0.0,<3.0.0",
+
+    # Reporting
+    "allure-pytest>=2.15.0,<3.0.0",
+
+    # Test Data & Utilities
+    "faker>=18.0.0,<19.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+
+    # Retry logic
+    "tenacity>=8.0.0,<9.0.0",
+
+    # Async
+    "anyio>=3.0.0,<4.0.0",
+
+    # HTTP Client for async
+    "aiohttp>=3.8.0,<4.0.0",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0,<2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+# Основные опции
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--disable-warnings",
+    "-n", "auto",
+    "--alluredir=allure-results",
+    "--tb=short",
+    "--dist=loadscope",
+    "--max-worker-restart=0",
+]
+
+# Настройки маркеров
+markers = [
+    "ui: UI Tests with Playwright",
+    "api: REST API Tests",
+    "grpc: gRPC Tests",
+    "kafka: Kafka Tests",
+    "soap: SOAP Tests",
+    "db: Database Tests",
+    "smoke: Smoke Tests",
+    "critical: Critical Path Tests",
+    "integration: Integration Tests",
+    "performance: Performance Tests",
+    "security: Security Tests",
+    "slow: Slow running tests"
+]
+
+# Настройки xdist для параллельного выполнения
+xfail_strict = true
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.poetry.scripts]
+niffler-test = "main:cli"
+
+[tool.allure]
+title = "Niffler Test Report"
+description = "Comprehensive test report for Niffler application"
+language = "en"
+baseUrl = "https://github.com/ZalinaKodz/niffler-py-st3"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pydantic.*",
+    "sqlmodel.*",
+    "grpc.*"
+]
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  | \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | allure-reports
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_first_party = ["tests", "internal", "pages", "clients", "fixtures", "databases"]
+
+# Настройки для Playwright
+[tool.playwright]
+version = "1.40.0"
+
+[[tool.playwright.browsers]]
+name = "chromium"
+channel = "chrome"
+
+# Настройки для coverage (если нужно)
+[tool.coverage.run]
+source = ["tests", "internal", "pages", "clients"]
+omit = ["*/test_*", "*/__pycache__/*"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]

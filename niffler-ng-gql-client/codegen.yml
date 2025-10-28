@@ -1,5 +1,5 @@
 schema: "http://localhost:8090/graphql"
-documents: "src/**/*.graphql"
+documents: "niffler/**/*.graphql"
 generates:
   src/generated/graphql.tsx:
     plugins:
